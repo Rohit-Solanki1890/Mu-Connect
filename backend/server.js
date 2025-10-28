@@ -26,10 +26,27 @@ const errorHandler = require('./middleware/errorHandler');
 const app = express();
 const server = createServer(app);
 
+// Build allowed origins list from env (can be comma-separated). Strip trailing slashes.
+const rawClientUrls = process.env.CLIENT_URL || process.env.CLIENT_URLS || '';
+const allowedOrigins = rawClientUrls
+  .split(',')
+  .map(u => u.trim().replace(/\/$/, ''))
+  .filter(Boolean);
+
 // Socket.io setup
 const io = new Server(server, {
   cors: {
-    origin: process.env.CLIENT_URL || "http://localhost:3000",
+    origin: function(origin, callback) {
+      // Allow requests with no origin (like mobile apps or curl)
+      if (!origin) return callback(null, true);
+      const originNoSlash = origin.replace(/\/$/, '');
+      if (allowedOrigins.length === 0) {
+        // If no allowed origins specified, allow any origin (useful for development)
+        return callback(null, true);
+      }
+      if (allowedOrigins.includes(originNoSlash)) return callback(null, true);
+      return callback(new Error('CORS origin not allowed'));
+    },
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     credentials: true,
     allowedHeaders: ["Content-Type", "Authorization"]
@@ -47,9 +64,22 @@ const limiter = rateLimit({
 // Middleware
 app.use(helmet());
 app.use(limiter);
+
+// CORS middleware: allow multiple origins and echo the Origin header when allowed
 app.use(cors({
-  origin: process.env.CLIENT_URL,
-  credentials: true
+  origin: function(origin, callback) {
+    // Allow requests with no origin (like server-to-server or mobile)
+    if (!origin) return callback(null, true);
+    const originNoSlash = origin.replace(/\/$/, '');
+    if (allowedOrigins.length === 0) {
+      // no specific origins set -> allow any
+      return callback(null, true);
+    }
+    if (allowedOrigins.includes(originNoSlash)) return callback(null, true);
+    return callback(new Error('Not allowed by CORS'));
+  },
+  credentials: true,
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(cookieParser());
 app.use(express.json({ limit: '10mb' }));

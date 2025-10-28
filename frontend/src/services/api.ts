@@ -4,7 +4,8 @@ import axios from 'axios';
 // If provided, ensure it doesn't end with a slash and append /api so requests go to the API root.
 const rawEnvUrl = import.meta.env.VITE_API_URL;
 const envUrl = rawEnvUrl ? rawEnvUrl.replace(/\/$/, '') : '';
-const API_BASE_URL = envUrl ? `${envUrl}/api` : 'http://localhost:5000/api';
+// Use backend root (no /api appended) — frontend code calls /api/... endpoints
+const API_BASE_URL = envUrl || 'http://localhost:5000';
 
 export const api = axios.create({
   baseURL: API_BASE_URL,

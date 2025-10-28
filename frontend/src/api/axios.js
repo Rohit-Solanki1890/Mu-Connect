@@ -3,7 +3,8 @@ import axios from 'axios';
 // Use VITE_API_URL if provided, append /api to reach the API root.
 const rawEnvUrl = import.meta.env.VITE_API_URL;
 const envUrl = rawEnvUrl ? rawEnvUrl.replace(/\/$/, '') : '';
-const base = envUrl ? `${envUrl}/api` : 'http://localhost:5000/api';
+// Use backend root (no /api appended) — frontend code calls /api/... endpoints
+const base = envUrl || 'http://localhost:5000';
 
 const api = axios.create({
   baseURL: base,
