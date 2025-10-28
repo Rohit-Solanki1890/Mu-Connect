@@ -33,18 +33,39 @@ const allowedOrigins = rawClientUrls
   .map(u => u.trim().replace(/\/$/, ''))
   .filter(Boolean);
 
+// Optional: allow regex patterns for preview domains via CLIENT_PATTERNS env (comma-separated regex strings)
+const rawClientPatterns = process.env.CLIENT_PATTERNS || '';
+const allowedPatterns = rawClientPatterns
+  .split(',')
+  .map(p => p.trim())
+  .filter(Boolean)
+  .map(p => {
+    try {
+      return new RegExp(p);
+    } catch (err) {
+      console.warn('Invalid CLIENT_PATTERNS regex:', p);
+      return null;
+    }
+  })
+  .filter(Boolean);
+
+// utility to check whether an origin is allowed
+function originAllowed(origin) {
+  if (!origin) return true; // allow server-to-server requests
+  const originNoSlash = origin.replace(/\/$/, '');
+  // if no explicit allowed origins or patterns set, allow (useful for dev)
+  if (allowedOrigins.length === 0 && allowedPatterns.length === 0) return true;
+  if (allowedOrigins.includes(originNoSlash)) return true;
+  return allowedPatterns.some(rx => rx.test(origin));
+}
+
 // Socket.io setup
 const io = new Server(server, {
   cors: {
     origin: function(origin, callback) {
-      // Allow requests with no origin (like mobile apps or curl)
+      // allow requests with no origin (like curl / mobile)
       if (!origin) return callback(null, true);
-      const originNoSlash = origin.replace(/\/$/, '');
-      if (allowedOrigins.length === 0) {
-        // If no allowed origins specified, allow any origin (useful for development)
-        return callback(null, true);
-      }
-      if (allowedOrigins.includes(originNoSlash)) return callback(null, true);
+      if (originAllowed(origin)) return callback(null, true);
       return callback(new Error('CORS origin not allowed'));
     },
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
@@ -68,14 +89,8 @@ app.use(limiter);
 // CORS middleware: allow multiple origins and echo the Origin header when allowed
 app.use(cors({
   origin: function(origin, callback) {
-    // Allow requests with no origin (like server-to-server or mobile)
     if (!origin) return callback(null, true);
-    const originNoSlash = origin.replace(/\/$/, '');
-    if (allowedOrigins.length === 0) {
-      // no specific origins set -> allow any
-      return callback(null, true);
-    }
-    if (allowedOrigins.includes(originNoSlash)) return callback(null, true);
+    if (originAllowed(origin)) return callback(null, true);
     return callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
