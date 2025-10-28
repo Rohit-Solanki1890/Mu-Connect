@@ -13,10 +13,11 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
   const socketRef = useRef<Socket | null>(null);
 
   useEffect(() => {
-    const s = io('/', { 
-      path: '/socket.io', 
+    const SOCKET_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+    const s = io(SOCKET_URL, { 
       transports: ['websocket', 'polling'],
-      withCredentials: true
+      withCredentials: true,
+      forceNew: true
     });
     socketRef.current = s;
     if (user?._id) s.emit('user:join', { userId: user._id });

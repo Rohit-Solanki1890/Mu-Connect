@@ -29,9 +29,13 @@ const server = createServer(app);
 // Socket.io setup
 const io = new Server(server, {
   cors: {
-    origin: process.env.SOCKET_CORS_ORIGIN || "http://localhost:3000",
-    methods: ["GET", "POST"]
-  }
+    origin: process.env.CLIENT_URL || "http://localhost:3000",
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    credentials: true,
+    allowedHeaders: ["Content-Type", "Authorization"]
+  },
+  path: '/socket.io/',
+  transports: ['websocket', 'polling']
 });
 
 // Rate limiting
@@ -44,7 +48,7 @@ const limiter = rateLimit({
 app.use(helmet());
 app.use(limiter);
 app.use(cors({
-  origin: process.env.CLIENT_URL || "http://localhost:3000",
+  origin: process.env.CLIENT_URL,
   credentials: true
 }));
 app.use(cookieParser());
@@ -84,7 +88,7 @@ app.use('*', (req, res) => {
 });
 
 // Database connection
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/marwadi-connect-pro', {
+mongoose.connect(process.env.MONGODB_URI , {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })
@@ -100,7 +104,7 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/marwadi-c
   process.exit(1);
 });
 
-const PORT = process.env.MONGO_URI || 5000;
+const PORT = process.env.PORT || 5000;
 const HOST = '0.0.0.0';
 
 server.listen(PORT, HOST, () => {
