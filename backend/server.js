@@ -49,14 +49,32 @@ const allowedPatterns = rawClientPatterns
   })
   .filter(Boolean);
 
+// Debug flag
+const DEBUG_CORS = process.env.DEBUG_CORS === 'true';
+
 // utility to check whether an origin is allowed
 function originAllowed(origin) {
-  if (!origin) return true; // allow server-to-server requests
+  if (!origin) {
+    if (DEBUG_CORS) console.log('[CORS] no origin provided -> allowed');
+    return true; // allow server-to-server requests
+  }
   const originNoSlash = origin.replace(/\/$/, '');
   // if no explicit allowed origins or patterns set, allow (useful for dev)
-  if (allowedOrigins.length === 0 && allowedPatterns.length === 0) return true;
-  if (allowedOrigins.includes(originNoSlash)) return true;
-  return allowedPatterns.some(rx => rx.test(origin));
+  if (allowedOrigins.length === 0 && allowedPatterns.length === 0) {
+    if (DEBUG_CORS) console.log('[CORS] no allowed origins/patterns configured -> allowing origin', origin);
+    return true;
+  }
+  if (allowedOrigins.includes(originNoSlash)) {
+    if (DEBUG_CORS) console.log('[CORS] origin matched exact allow-list ->', origin);
+    return true;
+  }
+  const patternMatch = allowedPatterns.some(rx => rx.test(origin));
+  if (patternMatch) {
+    if (DEBUG_CORS) console.log('[CORS] origin matched allowed pattern ->', origin);
+    return true;
+  }
+  if (DEBUG_CORS) console.log('[CORS] origin NOT allowed ->', origin);
+  return false;
 }
 
 // Socket.io setup
