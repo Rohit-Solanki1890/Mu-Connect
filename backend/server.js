@@ -139,6 +139,17 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Debug endpoint to inspect CORS config when DEBUG_CORS is enabled
+if (process.env.DEBUG_CORS === 'true') {
+  app.get('/debug/cors', (req, res) => {
+    res.json({
+      allowedOrigins,
+      allowedPatterns: allowedPatterns.map(r => r.toString()),
+      rawClientUrls: rawClientUrls || null,
+      rawClientPatterns: rawClientPatterns || null,
+    });
+  });
+}
 // Socket.io connection handling
 socketHandler(io);
 
