@@ -29,15 +29,14 @@ export function LoginPage() {
     
     setLoading(true);
     try {
-      console.log('Attempting login with:', { email: email.trim() });
-      await login(email.trim(), password);
+        await login(email.trim(), password.trim());
       navigate('/feed');
     } catch (err: any) {
       console.error('Login error:', err);
       const errorMessage = err?.response?.data?.message 
         || err?.response?.data?.errors?.[0]?.msg 
-        || err?.message 
-        || 'Login failed';
+          || (err?.message === 'Network Error' ? 'Cannot connect to server' : err?.message)
+          || 'An error occurred during login';
       setError(errorMessage);
     } finally {
       setLoading(false);
