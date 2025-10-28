@@ -11,7 +11,7 @@ WARNING: This script calls the Render API with your API key. Keep your key safe.
 param()
 
 function Read-Secret($prompt) {
-    Write-Host -NoNewline "$prompt: " -ForegroundColor Yellow
+    Write-Host -NoNewline ($prompt + ': ') -ForegroundColor Yellow
     $sec = Read-Host -AsSecureString
     return [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR($sec))
 }
