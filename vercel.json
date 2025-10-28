@@ -31,24 +31,10 @@
       "handle": "filesystem"
     },
     {
-      "src": "/api/(.*)",
-      "status": 404,
-      "dest": "/404.html"
-    },
-    {
       "src": "/(.*)",
-      "dest": "/index.html",
-      "headers": {
-        "Cache-Control": "no-cache, no-store, must-revalidate"
-      }
+      "dest": "/index.html"
     }
   ],
-  "functions": {
-    "api/*": {
-      "memory": 1024,
-      "maxDuration": 10
-    }
-  },
   "github": {
     "silent": true,
     "autoAlias": true
