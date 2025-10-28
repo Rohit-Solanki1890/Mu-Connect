@@ -1,16 +1,17 @@
 import axios from 'axios';
 
-// Use explicit VITE_API_URL, removing any trailing slashes
-const envUrl = import.meta.env.VITE_API_URL?.replace(/\/$/, '');
-const base = envUrl || 'http://localhost:5000';
+// Use VITE_API_URL if provided, append /api to reach the API root.
+const rawEnvUrl = import.meta.env.VITE_API_URL;
+const envUrl = rawEnvUrl ? rawEnvUrl.replace(/\/$/, '') : '';
+const base = envUrl ? `${envUrl}/api` : 'http://localhost:5000/api';
 
 const api = axios.create({
   baseURL: base,
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
-    'Accept': 'application/json'
-  }
+    Accept: 'application/json',
+  },
 });
 
 // Attach JWT token from localStorage if available
