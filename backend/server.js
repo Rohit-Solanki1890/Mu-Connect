@@ -150,6 +150,14 @@ if (process.env.DEBUG_CORS === 'true') {
     });
   });
 }
+
+app.get("/check-env", (req, res) => {
+  res.json({
+    CLIENT_URL: process.env.CLIENT_URL,
+    SOCKET_CORS_ORIGIN: process.env.SOCKET_CORS_ORIGIN
+  });
+});
+
 // Socket.io connection handling
 socketHandler(io);
 
