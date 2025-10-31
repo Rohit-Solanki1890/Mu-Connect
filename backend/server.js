@@ -122,13 +122,14 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use('/uploads', express.static('uploads'));
 
 // Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/posts', postRoutes);
-app.use('/api/blogs', blogRoutes);
-app.use('/api/rooms', require('./routes/rooms'));
-app.use('/api/notifications', require('./routes/notifications'));
-app.use('/api/admin', require('./routes/admin'));
+app.use('/api/api/auth', authRoutes);
+app.use('/api/api/users', userRoutes);
+app.use('/api/api/posts', postRoutes);
+app.use('/api/api/blogs', blogRoutes);
+app.use('/api/api/rooms', require('./routes/rooms'));
+app.use('/api/api/notifications', require('./routes/notifications'));
+app.use('/api/api/admin', require('./routes/admin'));
+
 
 // Health check
 app.get('/api/health', (req, res) => {
