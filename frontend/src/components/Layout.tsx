@@ -35,7 +35,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <nav className="hidden md:flex items-center space-x-1">
               <NavLink to="/home" className={linkClass}>Home</NavLink>
               <NavLink to="/feed" className={linkClass}>Feed</NavLink>
-              <NavLink to="/blogs" className={linkClass}>Blogs</NavLink>
+              <NavLink to="/messages" className={linkClass}>Messages</NavLink>
+              <NavLink to="/people" className={linkClass}>People</NavLink>
               <NavLink to="/rooms" className={linkClass}>Rooms</NavLink>
               <NavLink to="/search" className={linkClass}>Search</NavLink>
             </nav>
@@ -66,8 +67,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
                         <Link to={`/profile/${user?._id}`} className="block px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors">
                           Profile
                         </Link>
-                        <Link to="/blogs/new" className="block px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors">
-                          Write Blog
+                      <Link to="/messages" className="block px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors">
+                        Messages
                         </Link>
                         <button onClick={logout} className="block w-full text-left px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors">
                           Logout

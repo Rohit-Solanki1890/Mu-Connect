@@ -11,11 +11,12 @@ const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
 const postRoutes = require('./routes/posts');
 const blogRoutes = require('./routes/blogs');
+const messagesRoutes = require('./routes/messages');
 const roomRoutes = require('./routes/rooms');
 const notificationRoutes = require('./routes/notifications');
 const adminRoutes = require('./routes/admin');
 
-dotenv.config();
+dotenv.config({ path: path.join(__dirname, '.env') });
 const app = express();
 const mongoose = require("mongoose");
 
@@ -55,6 +56,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/posts', postRoutes);
 app.use('/api/blogs', blogRoutes);
+app.use('/api/messages', messagesRoutes);
 app.use('/api/rooms', roomRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/admin', adminRoutes);

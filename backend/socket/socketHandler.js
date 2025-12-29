@@ -63,6 +63,32 @@ module.exports = function socketHandler(io) {
     socket.on('user:join', ({ userId }) => {
       socket.join(`user:${userId}`);
     });
+
+    // Messaging events
+    socket.on('message:send', ({ recipientId, message }) => {
+      io.to(`user:${recipientId}`).emit('message:receive', message);
+    });
+
+    socket.on('message:typing', ({ recipientId, senderId, isTyping }) => {
+      io.to(`user:${recipientId}`).emit('message:typing', { senderId, isTyping });
+    });
+
+    socket.on('message:read', ({ senderId, recipientId }) => {
+      io.to(`user:${senderId}`).emit('message:read', { recipientId });
+    });
+
+    // User online status
+    socket.on('user:online', ({ userId }) => {
+      io.emit('user:online-status', { userId, isOnline: true });
+    });
+
+    socket.on('disconnect', () => {
+      console.log('❌ Socket disconnected:', socket.id);
+      socket.broadcast.emit('user:online-status', { 
+        userId: socket.userId, 
+        isOnline: false 
+      });
+    });
   });
 };
 

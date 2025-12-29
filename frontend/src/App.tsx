@@ -10,6 +10,8 @@ import { RegisterPage } from './pages/auth/RegisterPage';
 import { FeedPage } from './pages/feed/FeedPage';
 import { BlogsPage } from './pages/blogs/BlogsPage';
 import { BlogEditorPage } from './pages/blogs/BlogEditorPage';
+import { MessagesPage } from './pages/messages/MessagesPage';
+import { PeoplePage } from './pages/people/PeoplePage';
 import { RoomsPage } from './pages/rooms/RoomsPage';
 import { ProfilePage } from './pages/profile/ProfilePage';
 import { AdminPage } from './pages/admin/AdminPage';
@@ -34,6 +36,8 @@ export default function App() {
                   <Route path="/feed" element={<FeedPage />} />
                   <Route path="/blogs" element={<BlogsPage />} />
                   <Route path="/blogs/new" element={<Protected><BlogEditorPage /></Protected>} />
+                  <Route path="/messages" element={<Protected><MessagesPage /></Protected>} />
+                  <Route path="/people" element={<Protected><PeoplePage /></Protected>} />
                   <Route path="/rooms" element={<Protected><RoomsPage /></Protected>} />
                   <Route path="/admin" element={<Protected><AdminPage /></Protected>} />
                   <Route path="/search" element={<SearchPage />} />

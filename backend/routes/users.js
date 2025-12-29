@@ -426,6 +426,173 @@ router.get('/:id/blogs', protect, async (req, res) => {
   }
 });
 
+// @desc    Follow a user
+// @route   POST /api/users/:id/follow
+// @access  Private
+router.post('/:id/follow', protect, async (req, res) => {
+  try {
+    const userToFollow = await User.findById(req.params.id);
+    const currentUser = await User.findById(req.user._id);
+
+    if (!userToFollow) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    if (req.params.id === req.user._id.toString()) {
+      return res.status(400).json({
+        success: false,
+        message: 'You cannot follow yourself'
+      });
+    }
+
+    // Check if already following
+    if (currentUser.following.includes(req.params.id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'You are already following this user'
+      });
+    }
+
+    // Add to following list
+    currentUser.following.push(req.params.id);
+    await currentUser.save();
+
+    // Add to followers list
+    userToFollow.followers.push(req.user._id);
+    await userToFollow.save();
+
+    // Create notification
+    const Notification = require('../models/Notification');
+    await Notification.create({
+      user: req.params.id,
+      type: 'follow',
+      sender: req.user._id,
+      title: `${req.user.name} started following you`,
+      link: `/profile/${req.user._id}`
+    });
+
+    res.json({
+      success: true,
+      message: 'User followed successfully'
+    });
+  } catch (error) {
+    console.error('Follow user error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while following user'
+    });
+  }
+});
+
+// @desc    Unfollow a user
+// @route   POST /api/users/:id/unfollow
+// @access  Private
+router.post('/:id/unfollow', protect, async (req, res) => {
+  try {
+    const userToUnfollow = await User.findById(req.params.id);
+    const currentUser = await User.findById(req.user._id);
+
+    if (!userToUnfollow) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    // Check if following
+    if (!currentUser.following.includes(req.params.id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'You are not following this user'
+      });
+    }
+
+    // Remove from following list
+    currentUser.following = currentUser.following.filter(
+      id => id.toString() !== req.params.id
+    );
+    await currentUser.save();
+
+    // Remove from followers list
+    userToUnfollow.followers = userToUnfollow.followers.filter(
+      id => id.toString() !== req.user._id.toString()
+    );
+    await userToUnfollow.save();
+
+    res.json({
+      success: true,
+      message: 'User unfollowed successfully'
+    });
+  } catch (error) {
+    console.error('Unfollow user error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while unfollowing user'
+    });
+  }
+});
+
+// @desc    Get followers of a user
+// @route   GET /api/users/:id/followers
+// @access  Private
+router.get('/:id/followers', protect, async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id)
+      .populate('followers', 'name profilePicture bio college');
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      count: user.followers.length,
+      data: user.followers
+    });
+  } catch (error) {
+    console.error('Get followers error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while fetching followers'
+    });
+  }
+});
+
+// @desc    Get following list of a user
+// @route   GET /api/users/:id/following
+// @access  Private
+router.get('/:id/following', protect, async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id)
+      .populate('following', 'name profilePicture bio college');
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      count: user.following.length,
+      data: user.following
+    });
+  } catch (error) {
+    console.error('Get following error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while fetching following list'
+    });
+  }
+});
+
 // @desc    Delete user account
 // @route   DELETE /api/users/:id
 // @access  Private

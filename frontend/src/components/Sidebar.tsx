@@ -6,14 +6,14 @@ import { Button } from './ui/Button';
 const publicNavItems = [
   { name: "Home", path: "/home", icon: "🏠", description: "Welcome page" },
   { name: "Explore", path: "/search", icon: "🔍", description: "Discover content" },
-  { name: "Blogs", path: "/blogs", icon: "📝", description: "Read articles" },
 ];
 
 const authNavItems = [
   { name: "Home", path: "/home", icon: "🏠", description: "Welcome page" },
   { name: "Feed", path: "/feed", icon: "📱", description: "Latest posts" },
-  { name: "Blogs", path: "/blogs", icon: "📝", description: "Read & write" },
-  { name: "Rooms", path: "/rooms", icon: "💬", description: "Chat & games" },
+  { name: "Messages", path: "/messages", icon: "💬", description: "Chat with friends" },
+  { name: "People", path: "/people", icon: "👥", description: "Find & follow users" },
+  { name: "Rooms", path: "/rooms", icon: "🎮", description: "Chat & games" },
   { name: "Search", path: "/search", icon: "🔍", description: "Find anything" },
 ];
 
@@ -34,9 +34,9 @@ export default function Sidebar() {
                   ✍️ Create Post
                 </Button>
               </Link>
-              <Link to="/blogs/new">
+              <Link to="/messages">
                 <Button variant="ghost" size="sm" className="w-full justify-start">
-                  📝 Write Blog
+                  💬 Send Message
                 </Button>
               </Link>
               <Link to="/rooms">
