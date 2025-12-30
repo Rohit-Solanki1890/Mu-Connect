@@ -51,6 +51,11 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  isApproved: {
+    type: Boolean,
+    default: false,
+    description: 'Admin approval required before user can access the website'
+  },
   emailVerificationToken: {
     type: String,
     select: false
@@ -116,6 +121,22 @@ const userSchema = new mongoose.Schema({
   lastActive: {
     type: Date,
     default: Date.now
+  },
+  specialAccess: {
+    type: {
+      type: String,
+      enum: ['premium', 'moderator', 'content_creator'],
+      description: 'Type of special access granted by admin'
+    },
+    expiresAt: {
+      type: Date,
+      description: 'When the access expires (null for permanent)'
+    },
+    permanent: {
+      type: Boolean,
+      default: false,
+      description: 'Whether the access is permanent'
+    }
   }
 }, {
   timestamps: true
@@ -154,6 +175,7 @@ userSchema.methods.getPublicProfile = function() {
     college: this.college,
     year: this.year,
     branch: this.branch,
+    role: this.role,
     followers: this.followers.length,
     following: this.following.length,
     createdAt: this.createdAt,

@@ -37,9 +37,10 @@ export default function App() {
                   <Route path="/blogs" element={<BlogsPage />} />
                   <Route path="/blogs/new" element={<Protected><BlogEditorPage /></Protected>} />
                   <Route path="/messages" element={<Protected><MessagesPage /></Protected>} />
+                  <Route path="/messages/:userId" element={<Protected><MessagesPage /></Protected>} />
                   <Route path="/people" element={<Protected><PeoplePage /></Protected>} />
                   <Route path="/rooms" element={<Protected><RoomsPage /></Protected>} />
-                  <Route path="/admin" element={<Protected><AdminPage /></Protected>} />
+                  <Route path="/admin" element={<Protected requireAdmin={true}><AdminPage /></Protected>} />
                   <Route path="/search" element={<SearchPage />} />
                   <Route path="/profile/:id" element={<ProfilePage />} />
                   <Route path="*" element={<Navigate to="/" replace />} />

@@ -399,4 +399,331 @@ router.post('/announcement', [
   }
 });
 
+// @desc    Get pending user registrations (not approved)
+// @route   GET /api/admin/pending-users
+// @access  Private (Admin only)
+router.get('/pending-users', async (req, res) => {
+  try {
+    console.log('📡 Fetching pending users...');
+    const pendingUsers = await User.find({ isApproved: false })
+      .select('-password -emailVerificationToken -passwordResetToken')
+      .sort({ createdAt: -1 });
+
+    console.log(`✅ Found ${pendingUsers.length} pending users`);
+    res.json({
+      success: true,
+      count: pendingUsers.length,
+      data: pendingUsers
+    });
+  } catch (error) {
+    console.error('❌ Get pending users error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while fetching pending users'
+    });
+  }
+});
+
+// @desc    Approve user registration
+// @route   POST /api/admin/approve-user/:id
+// @access  Private (Admin only)
+router.post('/approve-user/:id', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    if (user.isApproved) {
+      return res.status(400).json({
+        success: false,
+        message: 'User is already approved'
+      });
+    }
+
+    // Approve the user
+    user.isApproved = true;
+    await user.save();
+
+    // Send approval email
+    try {
+      const { sendEmail } = require('../utils/emailService');
+      await sendEmail({
+        email: user.email,
+        subject: 'Account Approved - CloseNet',
+        message: `
+          <h2>Account Approved!</h2>
+          <p>Hello ${user.name},</p>
+          <p>Your account has been approved by the admin. You can now login to CloseNet.</p>
+          <a href="${process.env.CLIENT_URL}/login" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Login Now</a>
+          <p>Welcome to CloseNet!</p>
+        `
+      });
+    } catch (emailError) {
+      console.error('Email sending failed:', emailError);
+    }
+
+    res.json({
+      success: true,
+      message: 'User approved successfully',
+      data: user.getPublicProfile()
+    });
+  } catch (error) {
+    console.error('Approve user error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while approving user'
+    });
+  }
+});
+
+// @desc    Reject user registration
+// @route   POST /api/admin/reject-user/:id
+// @access  Private (Admin only)
+router.post('/reject-user/:id', [
+  body('reason')
+    .optional()
+    .isString()
+    .trim()
+    .withMessage('Reason must be a string')
+], async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    if (user.isApproved) {
+      return res.status(400).json({
+        success: false,
+        message: 'Cannot reject an already approved user'
+      });
+    }
+
+    const { reason } = req.body;
+
+    // Delete the user
+    await User.findByIdAndDelete(req.params.id);
+
+    // Send rejection email
+    try {
+      const { sendEmail } = require('../utils/emailService');
+      const emailMessage = reason 
+        ? `<p><strong>Reason:</strong> ${reason}</p>`
+        : '';
+      
+      await sendEmail({
+        email: user.email,
+        subject: 'Registration Not Approved - CloseNet',
+        message: `
+          <h2>Registration Decision</h2>
+          <p>Hello ${user.name},</p>
+          <p>Unfortunately, your registration request has not been approved.</p>
+          ${emailMessage}
+          <p>If you have questions, please contact the admin.</p>
+        `
+      });
+    } catch (emailError) {
+      console.error('Email sending failed:', emailError);
+    }
+
+    res.json({
+      success: true,
+      message: 'User registration rejected successfully'
+    });
+  } catch (error) {
+    console.error('Reject user error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while rejecting user'
+    });
+  }
+});
+
+// @desc    Grant special access to user (Premium, Moderator, Content Creator)
+// @route   POST /api/admin/grant-access/:id
+// @access  Private (Admin only)
+router.post('/grant-access/:id', [
+  body('accessType')
+    .isIn(['premium', 'moderator', 'content_creator'])
+    .withMessage('Invalid access type'),
+  body('permanent')
+    .isBoolean()
+    .withMessage('Permanent must be boolean'),
+  body('expiresAt')
+    .optional()
+    .isISO8601()
+    .withMessage('Invalid expiration date')
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation errors',
+        errors: errors.array()
+      });
+    }
+
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    const { accessType, permanent, expiresAt } = req.body;
+
+    user.specialAccess = {
+      type: accessType,
+      permanent: permanent,
+      expiresAt: permanent ? undefined : new Date(expiresAt)
+    };
+
+    await user.save();
+
+    res.json({
+      success: true,
+      message: `Special access (${accessType}) granted to ${user.name}`,
+      data: user.getPublicProfile()
+    });
+  } catch (error) {
+    console.error('Grant access error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while granting access'
+    });
+  }
+});
+
+// @desc    Revoke special access from user
+// @route   POST /api/admin/revoke-access/:id
+// @access  Private (Admin only)
+router.post('/revoke-access/:id', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    if (!user.specialAccess) {
+      return res.status(400).json({
+        success: false,
+        message: 'User does not have special access'
+      });
+    }
+
+    user.specialAccess = undefined;
+    await user.save();
+
+    res.json({
+      success: true,
+      message: `Special access revoked from ${user.name}`,
+      data: user.getPublicProfile()
+    });
+  } catch (error) {
+    console.error('Revoke access error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while revoking access'
+    });
+  }
+});
+
+// @desc    Send secret chat invitation to user
+// @route   POST /api/admin/send-secret-invite/:id
+// @access  Private (Admin only)
+router.post('/send-secret-invite/:id', [
+  body('message')
+    .trim()
+    .isLength({ min: 5, max: 1000 })
+    .withMessage('Message must be between 5 and 1000 characters')
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation errors',
+        errors: errors.array()
+      });
+    }
+
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    const admin = await User.findById(req.user.id);
+    const { message } = req.body;
+
+    // Create a secret chat invitation notification
+    const notification = new Notification({
+      recipient: user._id,
+      sender: admin._id,
+      type: 'secret_chat_invite',
+      title: `Secret Chat Invitation from ${admin.name}`,
+      description: message,
+      isRead: false,
+      relatedData: {
+        invitedBy: admin._id,
+        inviteMessage: message,
+        sentAt: new Date()
+      }
+    });
+
+    await notification.save();
+
+    // Send email notification
+    try {
+      const { sendEmail } = require('../utils/emailService');
+      await sendEmail({
+        email: user.email,
+        subject: `Secret Chat Invitation from ${admin.name}`,
+        message: `
+          <h2>Secret Chat Invitation</h2>
+          <p>Hello ${user.name},</p>
+          <p><strong>${admin.name}</strong> has invited you to a secret chat!</p>
+          <p><em>"${message}"</em></p>
+          <a href="${process.env.CLIENT_URL}/secret-chats" style="background-color: #6366f1; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">View Invitation</a>
+        `
+      });
+    } catch (emailError) {
+      console.error('Email sending failed:', emailError);
+    }
+
+    res.json({
+      success: true,
+      message: `Secret chat invitation sent to ${user.name}`,
+      data: {
+        recipientId: user._id,
+        invitedBy: admin._id,
+        message: message
+      }
+    });
+  } catch (error) {
+    console.error('Send secret invite error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while sending invite'
+    });
+  }
+});
+
 module.exports = router;
+

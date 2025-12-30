@@ -109,6 +109,7 @@ router.post('/register', [
           <p>If the button doesn't work, copy and paste this link:</p>
           <p>${verificationUrl}</p>
           <p>This link will expire in 24 hours.</p>
+          <p><strong>Note: Your account is pending admin approval. You will be able to login after approval.</strong></p>
         `
       });
     } catch (emailError) {
@@ -116,7 +117,11 @@ router.post('/register', [
       // Don't fail registration if email fails
     }
 
-    sendTokenResponse(user, 201, res);
+    res.status(201).json({
+      success: true,
+      message: 'Registration successful! Your account is pending admin approval. You will receive an email once approved.',
+      user: user.getPublicProfile()
+    });
   } catch (error) {
     console.error('Registration error:', error);
     res.status(500).json({

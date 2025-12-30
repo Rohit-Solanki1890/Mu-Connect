@@ -42,10 +42,31 @@ export default {
           "100%": { transform: "scale(1.1)", opacity: 0 },
         },
       },
+      spacing: {
+        'page': '1.5rem',  // 24px
+        'section': '1rem',  // 16px
+        'component': '0.5rem', // 8px
+      },
     },
   },
-  plugins: [],
+  plugins: [
+    ({ addUtilities }) => {
+      addUtilities({
+        '.unselectable': {
+          '-webkit-user-select': 'none',
+          '-webkit-touch-callout': 'none',
+          '-webkit-user-drag': 'none',
+          'user-select': 'none',
+        },
+        '.selectable': {
+          '-webkit-user-select': 'auto',
+          'user-select': 'auto',
+        },
+      })
+    },
+  ],
 };
+
 
 
 

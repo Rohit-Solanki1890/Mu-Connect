@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useParams } from 'react-router-dom';
 import { api } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import { useSocket } from '../../context/SocketContext';
@@ -31,24 +32,26 @@ export function MessagesPage() {
   const { user } = useAuth();
   const { socket } = useSocket();
   const queryClient = useQueryClient();
-  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const { userId: urlUserId } = useParams<{ userId?: string }>();
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(urlUserId || null);
   const [messageContent, setMessageContent] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout>();
 
   // Get conversations
-  const { data: conversationsData, isLoading: conversationsLoading } = useQuery({
+  const { data: conversationsData, isLoading: conversationsLoading, isError: conversationsError } = useQuery({
     queryKey: ['conversations'],
     queryFn: async () => {
       const response = await api.get('/api/messages/conversations');
       return response.data;
     },
     refetchInterval: 5000,
+    retry: 2,
   });
 
   // Get messages for selected conversation
-  const { data: messagesData, isLoading: messagesLoading } = useQuery({
+  const { data: messagesData, isLoading: messagesLoading, isError: messagesError } = useQuery({
     queryKey: ['messages', selectedUserId],
     queryFn: async () => {
       if (!selectedUserId) return null;
@@ -57,6 +60,7 @@ export function MessagesPage() {
     },
     enabled: !!selectedUserId,
     refetchInterval: 3000,
+    retry: 2,
   });
 
   // Send message mutation
@@ -141,14 +145,18 @@ export function MessagesPage() {
         <Card className="h-full flex flex-col">
           <CardBody className="flex flex-col h-full p-0">
             <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Messages</h2>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white unselectable">Messages</h2>
             </div>
             <div className="flex-1 overflow-y-auto">
-              {conversationsLoading ? (
+              {conversationsError ? (
+                <div className="p-4 text-center text-red-600 dark:text-red-400">
+                  Error loading conversations. Try refreshing.
+                </div>
+              ) : conversationsLoading ? (
                 <div className="p-4 text-center text-gray-600 dark:text-gray-400">
                   Loading conversations...
                 </div>
-              ) : conversationsData?.data?.length === 0 ? (
+              ) : !conversationsData?.data || conversationsData?.data?.length === 0 ? (
                 <div className="p-4 text-center text-gray-600 dark:text-gray-400">
                   No conversations yet. Start messaging someone!
                 </div>
@@ -225,11 +233,15 @@ export function MessagesPage() {
 
               {/* Messages Container */}
               <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 dark:bg-gray-900">
-                {messagesLoading ? (
+                {messagesError ? (
+                  <div className="text-center text-red-600 dark:text-red-400 py-8">
+                    Error loading messages. Try refreshing.
+                  </div>
+                ) : messagesLoading ? (
                   <div className="text-center text-gray-600 dark:text-gray-400 py-8">
                     Loading messages...
                   </div>
-                ) : messagesData?.data?.length === 0 ? (
+                ) : !messagesData?.data || messagesData?.data?.length === 0 ? (
                   <div className="text-center text-gray-600 dark:text-gray-400 py-8">
                     No messages yet. Start the conversation!
                   </div>

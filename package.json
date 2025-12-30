@@ -1,8 +1,8 @@
 {
-  "name": "marwadi-connect-pro",
+  "name": "closenet",
   "version": "1.0.0",
   "private": true,
-  "description": "A full-stack social platform for Marwadi students",
+  "description": "A full-stack social platform for friends and family to stay connected",
   "scripts": {
     "dev": "concurrently \"npm run server\" \"npm run client\"",
     "server": "nodemon backend/server.js",

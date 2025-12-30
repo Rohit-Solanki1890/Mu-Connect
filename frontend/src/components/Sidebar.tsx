@@ -12,7 +12,6 @@ const authNavItems = [
   { name: "Home", path: "/home", icon: "🏠", description: "Welcome page" },
   { name: "Feed", path: "/feed", icon: "📱", description: "Latest posts" },
   { name: "Messages", path: "/messages", icon: "💬", description: "Chat with friends" },
-  { name: "People", path: "/people", icon: "👥", description: "Find & follow users" },
   { name: "Rooms", path: "/rooms", icon: "🎮", description: "Chat & games" },
   { name: "Search", path: "/search", icon: "🔍", description: "Find anything" },
 ];
@@ -44,6 +43,13 @@ export default function Sidebar() {
                   🎮 Join Room
                 </Button>
               </Link>
+              {user?.role === 'admin' && (
+                <Link to="/admin">
+                  <Button variant="ghost" size="sm" className="w-full justify-start bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/30">
+                    ⚙️ Admin Panel
+                  </Button>
+                </Link>
+              )}
             </div>
           </CardBody>
         </Card>
@@ -72,49 +78,10 @@ export default function Sidebar() {
       </Card>
 
       {/* Profile Summary */}
-      {isAuthenticated && user && (
-        <Card>
-          <CardBody className="p-4">
-            <h3 className="font-semibold mb-3 text-gray-900 dark:text-white">Your Profile</h3>
-            <Link to={`/profile/${user._id}`} className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-              <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                <span className="text-white font-medium">
-                  {user.name?.[0]?.toUpperCase()}
-                </span>
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="font-medium text-gray-900 dark:text-white truncate">{user.name}</div>
-                <div className="text-sm text-gray-600 dark:text-gray-400 truncate">{user.email}</div>
-              </div>
-            </Link>
-          </CardBody>
-        </Card>
-      )}
+      {/* Removed - Profile will be accessible from top nav */}
 
       {/* Platform Info */}
-      <Card>
-        <CardBody className="p-4">
-          <h3 className="font-semibold mb-3 text-gray-900 dark:text-white">About Platform</h3>
-          <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-            <div className="flex items-center gap-2">
-              <span>🎓</span>
-              <span>For Marwadi Students</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span>💬</span>
-              <span>Real-time Chat</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span>🎮</span>
-              <span>Interactive Games</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span>📚</span>
-              <span>Knowledge Sharing</span>
-            </div>
-          </div>
-        </CardBody>
-      </Card>
+      {/* Moved to HomePage */}
     </div>
   );
 }

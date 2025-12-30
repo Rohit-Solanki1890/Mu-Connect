@@ -35,7 +35,7 @@ export function FeedPage() {
   return (
     <div className="grid gap-6 grid-cols-1 sm:grid-cols-[1fr,auto]">
       <div className="space-y-4">
-        <h2 className="text-xl font-semibold">Home</h2>
+        <h2 className="text-xl font-semibold unselectable">Home</h2>
         <Card><CardBody>
           <PostComposer onSubmit={(text) => createPost.mutate(text)} loading={createPost.isPending} />
         </CardBody></Card>
@@ -43,7 +43,7 @@ export function FeedPage() {
           <PostCard key={post._id} post={post} onLike={() => likePost.mutate(post._id)} onComment={(text) => commentPost.mutate({ id: post._id, content: text })} />
         ))}
       </div>
-      <div className="hidden sm:block">
+      <div className="hidden sm:block lg:hidden">
         <Sidebar />
       </div>
     </div>

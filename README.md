@@ -1,6 +1,6 @@
-# Marwadi Connect Pro
+# CloseNet
 
-A comprehensive full-stack social platform designed specifically for Marwadi students, featuring real-time chat, blogs, social feed, mini-games, and more.
+A comprehensive full-stack social platform designed for friends and family to stay connected, featuring real-time chat, blogs, social feed, mini-games, and more.
 
 ## Features
 
@@ -48,7 +48,7 @@ A comprehensive full-stack social platform designed specifically for Marwadi stu
 1. **Clone and install dependencies:**
    ```bash
    git clone <repository-url>
-   cd marwadi-connect-pro
+   cd closenet
    npm run install-all
    ```
 
@@ -106,7 +106,7 @@ To populate with seed data, the backend will automatically create sample data on
 ## Project Structure
 
 ```
-marwadi-connect-pro/
+closenet/
 ├── frontend/                 # React frontend
 │   ├── public/
 │   ├── src/
@@ -469,14 +469,14 @@ socket?.emit('message:typing', {
 
 ## Contact & Social
 
-- 📧 Email: support@marwadiconnect.com
+- 📧 Email: hello@closenet.app
 - 💬 Discord: [Join our server]
-- 🐦 Twitter: @MarwadiConnect
-- 📱 Instagram: @MarwadiConnect
+- 🐦 Twitter: @CloseNetApp
+- 📱 Instagram: @CloseNetApp
 
 ---
 
-Made with ❤️ for Marwadi Students
+Made with ❤️ for friends and family
 
 ## Setup
 1. Install dependencies:

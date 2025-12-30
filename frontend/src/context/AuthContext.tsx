@@ -6,6 +6,7 @@ type User = {
   name: string;
   email: string;
   profilePicture?: string;
+  role?: 'user' | 'admin' | 'moderator';
 };
 
 type AuthContextValue = {

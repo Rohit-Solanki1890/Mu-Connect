@@ -15,6 +15,8 @@ const messagesRoutes = require('./routes/messages');
 const roomRoutes = require('./routes/rooms');
 const notificationRoutes = require('./routes/notifications');
 const adminRoutes = require('./routes/admin');
+const adminFeaturesRoutes = require('./routes/adminFeatures');
+const seedData = require('./utils/seedData');
 
 dotenv.config({ path: path.join(__dirname, '.env') });
 const app = express();
@@ -25,7 +27,11 @@ mongoose
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
-  .then(() => console.log("✅ MongoDB connected"))
+  .then(async () => {
+    console.log("✅ MongoDB connected");
+    // Seed data on startup
+    await seedData();
+  })
   .catch((err) => console.error("❌ MongoDB connection error:", err));
 
 
@@ -37,10 +43,11 @@ app.use(cookieParser());
 
 // ✅ CORS setup
 const allowedOrigins = [
-  'http://localhost:5173',
-  'http://localhost:3000',
-  'https://muconnect-eight.vercel.app',
-  'https://mu-connect-frontend.onrender.com',
+  'http://localhost:5173',  // Local dev frontend
+  'http://localhost:3000',  // Local dev frontend
+  'https://closenet-eight.vercel.app',  // Production frontend
+  'https://muconnect-eight.vercel.app',  // Old frontend (transition)
+  'https://mu-connect-frontend.onrender.com',  // Old frontend (transition)
 ];
 
 app.use(
@@ -60,6 +67,7 @@ app.use('/api/messages', messagesRoutes);
 app.use('/api/rooms', roomRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/admin', adminFeaturesRoutes);
 
 // --- DEFAULT ROUTE ---
 app.get('/', (req, res) => {

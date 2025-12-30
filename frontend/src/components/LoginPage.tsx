@@ -6,13 +6,13 @@ export default function LoginPage() {
       {/* Left side with live GIF */}
       <div className="flex-1 bg-black relative">
         <img
-          src="/assets/marwadi-live.gif"
-          alt="Marwadi University Live"
+          src="/assets/closenet-welcome.gif"
+          alt="CloseNet Welcome"
           className="h-full w-full object-cover"
         />
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-white text-4xl font-bold animate-pulse">
-            Welcome to Marwadi Connect
+            Welcome to CloseNet
           </div>
         </div>
       </div>

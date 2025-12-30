@@ -4,12 +4,14 @@ import { useAuth } from '../../context/AuthContext';
 import { Card, CardBody } from '../../components/ui/Card';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
+import { Link } from 'react-router-dom';
 
 export function RegisterPage() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { register } = useAuth();
@@ -17,6 +19,7 @@ export function RegisterPage() {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    setSuccess(null);
     
     // Basic validation
     if (!name.trim()) {
@@ -36,7 +39,8 @@ export function RegisterPage() {
     try {
       console.log('Attempting registration with:', { name: name.trim(), email: email.trim() });
       await register(name.trim(), email.trim(), password);
-      navigate('/feed');
+      setSuccess('Registration successful! Your account is pending admin approval. You will receive an email once approved.');
+      // Don't navigate - show success message
     } catch (err: any) {
       console.error('Registration error:', err);
       const errorMessage = err?.response?.data?.message 
@@ -49,6 +53,28 @@ export function RegisterPage() {
     }
   }
 
+  if (success) {
+    return (
+      <div className="max-w-sm mx-auto">
+        <Card className="border-green-200 dark:border-green-900">
+          <CardBody className="text-center space-y-4">
+            <div className="text-5xl">✅</div>
+            <h2 className="text-xl font-semibold text-green-700 dark:text-green-300">Registration Successful!</h2>
+            <p className="text-gray-600 dark:text-gray-400">
+              {success}
+            </p>
+            <p className="text-sm text-gray-500 dark:text-gray-500">
+              Check your email for updates. In the meantime, you can try logging in once approved.
+            </p>
+            <Link to="/login">
+              <Button className="w-full">Go to Login</Button>
+            </Link>
+          </CardBody>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-sm mx-auto">
       <Card>
@@ -58,11 +84,14 @@ export function RegisterPage() {
             <Input placeholder="Full name" value={name} onChange={e => setName(e.target.value)} />
             <Input placeholder="Email" type="email" value={email} onChange={e => setEmail(e.target.value)} />
             <Input placeholder="Password" type="password" value={password} onChange={e => setPassword(e.target.value)} />
-            {error && <div className="text-red-600 text-sm">{error}</div>}
+            {error && <div className="text-red-600 dark:text-red-400 text-sm bg-red-50 dark:bg-red-900/20 p-2 rounded">{error}</div>}
             <Button className="w-full" disabled={loading}>
               {loading ? 'Creating account...' : 'Create account'}
             </Button>
           </form>
+          <p className="text-xs text-gray-500 dark:text-gray-500 mt-4">
+            Already have an account? <Link to="/login" className="text-blue-600 hover:underline">Login here</Link>
+          </p>
         </CardBody>
       </Card>
     </div>
